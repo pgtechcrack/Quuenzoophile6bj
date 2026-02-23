@@ -1,0 +1,43 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #0c111d;
+  color: white;
+  padding: 20px;
+}
+
+h1, h2 {
+  color: gold;
+}
+
+.balance {
+  background-color: #141b2d;
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  background-color: #1c2236;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+}
+
+button {
+  background-color: gold;
+  color: black;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #ffd700;
+}
+

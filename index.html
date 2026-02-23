@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoldToken Pro - Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.1.0/dist/chartjs-chart-financial.min.js"></script>
+<style>
+body{margin:0;font-family:Arial;background:#0c111d;color:white;}
+.login{height:100vh;display:flex;justify-content:center;align-items:center;background:#0c111d;}
+.box{background:#141b2d;padding:30px;width:340px;border-radius:15px;box-shadow:0 0 25px rgba(255,215,0,.3);}
+input{width:100%;padding:10px;margin-top:10px;border-radius:8px;border:none;}
+button{width:100%;padding:10px;margin-top:10px;border:none;border-radius:8px;background:gold;font-weight:bold;cursor:pointer;}
+.dashboard{display:none;padding:15px;}
+.top{display:flex;justify-content:space-between;align-items:center;}
+.vip{background:gold;color:black;padding:4px 8px;border-radius:6px;font-size:12px;animation:glow 1.5s infinite alternate;}
+.probadge{background:#1e90ff;color:white;padding:4px 8px;border-radius:6px;font-size:12px;margin-left:5px;animation:glow 2s infinite alternate;}
+@keyframes glow{from{box-shadow:0 0 5px gold;}to{box-shadow:0 0 20px gold;}}
+.card{background:#141b2d;padding:15px;border-radius:12px;margin-top:15px;box-shadow:0 0 10px rgba(255,255,255,.1);}
+.balance{font-size:24px;color:gold;transition: all 1s ease-in-out;}
+.token-list{margin-top:15px;}
+.token{display:flex;justify-content:space-between;padding:10px;background:#0f172a;margin-top:8px;border-radius:8px;align-items:center;transition:all 0.3s;}
+.token:hover{background:#1c2236;transform:scale(1.02);}
+.token span{font-size:14px;}
+.token .pricechange{margin-left:10px;font-size:12px;}
+.token .bar-container{width:100%;background:#0a0f1a;border-radius:6px;margin-top:4px;height:8px;overflow:hidden;}
+.token .bar-fill{height:100%;background:gold;width:0;border-radius:6px;transition: width 1s ease-in-out;}
+.nav{position:fixed;bottom:0;width:100%;background:#141b2d;display:flex;justify-content:space-around;padding:10px;}
+.nav button{background:none;color:white;border:none;font-size:14px;}
+.notification-container{position:fixed;top:20px;right:20px;z-index:9999;}
+.notification{background:#141b2d;padding:15px 20px;margin-top:10px;border-left:5px solid gold;border-radius:8px;box-shadow:0 0 15px rgba(0,0,0,.5);animation:slideIn .5s ease;font-size:14px;opacity:1;transition:opacity 0.5s ease;}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+.profit{color:#00ff88;}
+.loss{color:#ff4d4d;}
+.trade-feed{background:#141b2d;padding:10px;border-radius:12px;height:150px;overflow-y:auto;margin-top:15px;font-size:14px;}
+.trade-feed p{margin:4px 0;}
+.green{color:#00ff88;}
+.market-bar{display:flex;justify-content:space-around;padding:10px;background:#0f172a;border-radius:8px;margin-top:10px;font-size:14px;}
+.market-bar span{color:white;}
+.market-bar .up{color:#00ff88;}
+.market-bar .down{color:#ff4d4d;}
+.investment-list{margin-top:10px;}
+.investment{display:flex;justify-content:space-between;padding:10px;background:#0f172a;margin-top:8px;border-radius:8px;align-items:center;transition:all 0.3s;}
+.investment:hover{background:#1c2236;transform:scale(1.03);}
+.investment button{padding:5px 10px;background:gold;color:black;border:none;border-radius:6px;cursor:pointer;font-weight:bold;transition:all 0.3s;}
+.investment button:hover{background:#ffd700;transform:scale(1.05);}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login" id="loginPage">
+  <div class="box">
+    <h2 style="color:gold;text-align:center;">GoldToken Pro</h2>
+    <input id="user" placeholder="Email">
+    <input id="pass" type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <p id="error" style="color:red;text-align:center;"></p>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dashboard" id="dashboard">
+  <div class="top">
+    <div>
+      <strong id="profileName">Robert Provenzano</strong> 
+      <span class="vip">VIP</span>
+      <span class="probadge">PRO</span>
+    </div>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <div class="market-bar">
+    <span>Gold: <span id="marketGold">$2000</span></span>
+    <span>Silver: <span id="marketSilver">$50</span></span>
+    <span>BTC: <span id="marketBTC">$30,000</span></span>
+  </div>
+
+  <div class="card">
+    <h3>Portfolio Balance</h3>
+    <div class="balance" id="balance"></div>
+    <button onclick="deposit()">Deposit</button>
+    <button onclick="withdraw()">Withdraw</button>
+  </div>
+
+  <div class="card">
+    <h3>Token Holdings</h3>
+    <div class="token-list" id="tokenList"></div>
+  </div>
+
+  <div class="card">
+    <h3>Gold Price Chart</h3>
+    <canvas id="candlestickChart"></canvas>
+  </div>
+
+  <div class="card">
+    <h3>Portfolio Value Over Time</h3>
+    <canvas id="portfolioChart"></canvas>
+  </div>
+
+  <div class="card">
+    <h3>Referral Activity Feed</h3>
+    <div class="trade-feed" id="tradeFeed"></div>
+  </div>
+
+  <div class="card" style="text-align:center;">
+    <h3>Admin Info</h3>
+    <p>For support: <a href="mailto:learcapital@proton.me" style="color:gold;">learcapital@proton.me</a></p>
+  </div>
+
+  <div class="card">
+    <h3>Investment Plans</h3>
+    <div class="investment-list">
+      <div class="investment"><span>Invest $200 → $800 in 2 days</span><button onclick="investNowEmail(200)">Invest Now</button></div>
+      <div class="investment"><span>Invest $400 → $1,600 in 3 days</span><button onclick="investNowEmail(400)">Invest Now</button></div>
+      <div class="investment"><span>Invest $600 → $2,400 in 3 days</span><button onclick="investNowEmail(600)">Invest Now</button></div>
+      <div class="investment"><span>Invest $1,000 → $5,000 in 5 days</span><button onclick="investNowEmail(1000)">Invest Now</button></div>
+      <div class="investment"><span>Invest $2,000 → $10,000 in 7 days</span><button onclick="investNowEmail(2000)">Invest Now</button></div>
+      <div class="investment"><span>Invest $3,000 → $15,000 in 8 days</span><button onclick="investNowEmail(3000)">Invest Now</button></div>
+      <div class="investment"><span>Invest $5,000 → $30,000 in 10 days</span><button onclick="investNowEmail(5000)">Invest Now</button></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Customer Reviews & Market News</h3>
+    <div id="reviews" class="trade-feed"></div>
+  </div>
+
+</div>
+
+<div class="nav" id="navBar" style="display:none;">
+  <button onclick="showDashboard()">Home</button>
+</div>
+
+<div class="notification-container" id="notifications"></div>
+
+<script>
+// ---- Tokens ----
+let tokens = [
+  {name:"Gold Token", symbol:"GTX", holding:0.05, price:2000, prevPrice:2000},
+  {name:"Silver Token", symbol:"SLV", holding:0, price:50, prevPrice:50},
+  {name:"Platinum Token", symbol:"PLT", holding:0, price:120, prevPrice:120},
+  {name:"CryptoToken", symbol:"CTK", holding:0, price:5, prevPrice:5},
+  {name:"Diamond Token", symbol:"DMT", holding:0, price:500, prevPrice:500}
+];
+let startingValue = 100;
+
+// ---- LOGIN ----
+function login(){
+  const user = document.getElementById("user").value;
+  const pass = document.getElementById("pass").value;
+  if(user==="robertprov@gmail.com" && pass==="robert1234"){
+    document.getElementById("loginPage").style.display="none";
+    document.getElementById("dashboard").style.display="block";
+    document.getElementById("navBar").style.display="flex";
+    initDashboard();
+  } else {
+    document.getElementById("error").innerText="Invalid login!";
+  }
+}
+function logout(){ location.reload(); }
+
+// ---- INIT DASHBOARD ----
+function initDashboard(){
+  updateDisplay();
+  populateTokens();
+  setInterval(simulateReferral,6000);
+  setInterval(updatePrices,5000);
+  setInterval(showFakeReview,5000);
+  notify("Welcome back, Robert!");
+}
+
+// ---- Deposit/Withdraw ----
+function deposit(){ alert("Please fully register to deposit or withdraw."); }
+function withdraw(){ alert("Please fully register to deposit or withdraw."); }
+
+// ---- Display ----
+function updateDisplay(){
+  let total = tokens.reduce((s,t)=>s+t.holding*t.price,0);
+  let profit = ((total-startingValue)/startingValue)*100;
+  let cls = profit>=0?"profit":"loss";
+  let sym = profit>=0?"+":"";
+  document.getElementById("balance").innerHTML=`Total: $${total.toFixed(2)} <br><span class="${cls}">${sym}${profit.toFixed(2)}%</span>`;
+}
+
+function populateTokens(){
+  let container = document.getElementById("tokenList");
+  container.innerHTML="";
+  tokens.forEach((t,i)=>{
+    let change = t.price-t.prevPrice;
+    let cls = change>=0?"up":"down";
+    let div=document.createElement("div");
+    div.className="token";
+    div.innerHTML=`
+      <span>${t.name} (${t.symbol})</span>
+      <span>Holding: ${t.holding} | $${(t.holding*t.price).toFixed(2)}
+        <span class="pricechange ${cls}">(${change>=0?"+":""}${change.toFixed(2)})</span>
+        <div class="bar-container"><div class="bar-fill" id="tokenBar${i}"></div></div>
+      </span>`;
+    container.appendChild(div);
+  });
+  updateTokenBars();
+}
+function updateTokenBars(){
+  tokens.forEach((t,i)=>{
+    let div=document.getElementById("tokenBar"+i);
+    if(div) div.style.width = Math.min(100,(t.holding*t.price)/5000*100)+"%";
+  });
+}
+
+// ---- Referral Feed ----
+let tradeFeed=document.getElementById("tradeFeed");
+function simulateReferral(){
+  let p=document.createElement("p");
+  p.innerHTML=`<span class='green'>You received a free gold coin from referral</span>`;
+  tradeFeed.appendChild(p);
+  tradeFeed.scrollTop=tradeFeed.scrollHeight;
+  tokens[0].holding+=0.001;
+  populateTokens();
+  updateDisplay();
+}
+
+// ---- Fake price updates ----
+function updatePrices(){
+  tokens.forEach(t=>{
+    t.prevPrice = t.price;
+    t.price = Math.max(0,t.price + (Math.random()-0.5)*20);
+  });
+  updateDisplay();
+  populateTokens();
+  document.getElementById("marketGold").innerText="$"+tokens[0].price.toFixed(2);
+  document.getElementById("marketSilver").innerText="$"+tokens[1].price.toFixed(2);
+}
+
+// ---- Fake Reviews ----
+const reviews=[
+  "John D.: 'I invested $500, got $2,250 in 3 days!'",
+  "Sarah K.: 'GoldToken Pro is amazing!'",
+  "CryptoNews: 'Gold surges +2%, BTC dips -1.5% today.'",
+  "Alex P.: 'I invested $1,000 and got $5,000!'",
+  "MarketWatch: 'Silver token stable at $50 today.'",
+  "Emily R.: 'Referral bonuses are real!'",
+  "FinanceTimes: 'GoldToken market +3% in last 24h.'"
+];
+let reviewIndex=0;
+function showFakeReview(){
+  let container=document.getElementById("reviews");
+  let p=document.createElement("p");
+  p.innerText=reviews[reviewIndex];
+  container.appendChild(p);
+  container.scrollTop=container.scrollHeight;
+  reviewIndex=(reviewIndex+1)%reviews.length;
+}
+
+// ---- Notifications ----
+function notify(msg){
+  let container=document.getElementById("notifications");
+  let note=document.createElement("div");
+  note.className="notification";
+  note.innerText=msg;
+  container.appendChild(note);
+  setTimeout(()=>{note.style.opacity="0"; setTimeout(()=>{note.remove();},500);},4000);
+}
+
+// ---- Invest Now Email ----
+function investNowEmail(amount){
+  window.location.href=`mailto:learcapital@proton.me?subject=Investment Request: $${amount}&body=Hello Admin, I would like to invest $${amount}.`;
+}
+</script>
+</body>
+</html>
